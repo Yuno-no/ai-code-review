@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: ai-code-review
+  profiles:
+    active: dev
+  ai:
+    openai:
+      api-key: xxx
+      base-url: xxx
+      chat:
+        options:
+          model: xxx
+github:
+  webhook-secret: xxx
+  app-id: xxx
+  installation-id: 111
+  private-key: xxx
+  token: xxx
