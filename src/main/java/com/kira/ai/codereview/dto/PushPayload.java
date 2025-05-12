@@ -15,13 +15,13 @@ import java.util.List;
 public class PushPayload {
 
     @JsonProperty("ref")
-    private String ref; // 推送的引用，例如 "refs/heads/main" 或 "refs/tags/v1.0"
+    private String ref;
 
     @JsonProperty("before")
-    private String before; // 推送前的SHA哈希值 (如果是新分支，则为全0)
+    private String before;
 
     @JsonProperty("after")
-    private String after; // 推送后的SHA哈希值 (如果是删除分支，则为全0)
+    private String after;
 
     @JsonProperty("repository")
     private Repository repository;
@@ -29,32 +29,41 @@ public class PushPayload {
     @JsonProperty("pusher")
     private Pusher pusher;
 
-    @JsonProperty("sender") // 发送此webhook事件的用户/应用
-    private User sender;
+    @JsonProperty("sender")
+    private User sender; // User who triggered the event
 
     @JsonProperty("created")
-    private boolean created; // 如果此推送创建了新的引用（分支/标签），则为true
+    private boolean created;
 
     @JsonProperty("deleted")
-    private boolean deleted; // 如果此推送删除了引用（分支/标签），则为true
+    private boolean deleted;
 
     @JsonProperty("forced")
-    private boolean forced; // 如果这是一个强制推送，则为true
+    private boolean forced;
 
     @JsonProperty("base_ref")
-    private String baseRef; // 通常为null，除非是合并推送
+    private String baseRef; // Nullable
 
     @JsonProperty("compare")
-    private String compareUrl; // 比较此推送中更改的URL
+    private String compare; // URL to compare changes
 
     @JsonProperty("commits")
-    private List<Commit> commits; // 本次推送中包含的提交列表
+    private List<Commit> commits;
 
     @JsonProperty("head_commit")
-    private Commit headCommit; // 最新的提交（通常是commits列表中的最后一个）
+    private Commit headCommit; // Nullable if no commits
+
+    // Organization and Enterprise might also be present at top level for org/enterprise events
+    @JsonProperty("organization")
+    private Organization organization; // Nullable
+
+    @JsonProperty("enterprise")
+    private Enterprise enterprise; // Nullable
 
 
-
+    /**
+     * Represents the repository where the push occurred.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -66,28 +75,44 @@ public class PushPayload {
         private String nodeId;
 
         @JsonProperty("name")
-        private String name; // 仓库名称
+        private String name;
 
         @JsonProperty("full_name")
-        private String fullName; // 例如 "octocat/Hello-World"
+        private String fullName;
 
         @JsonProperty("private")
         private boolean isPrivate;
 
         @JsonProperty("owner")
-        private User owner; // 仓库所有者
+        private User owner; // Can be a User or Organization type
 
         @JsonProperty("html_url")
-        private String htmlUrl; // 仓库的URL
+        private String htmlUrl;
 
         @JsonProperty("description")
-        private String description;
+        private String description; // Nullable
 
         @JsonProperty("fork")
         private boolean fork;
 
-        @JsonProperty("url") // API URL
-        private String url;
+        @JsonProperty("url")
+        private String url; // API URL
+
+        // Many other URLs, for brevity not all are listed, add as needed e.g.:
+        // forks_url, keys_url, collaborators_url, etc.
+
+        @JsonProperty("created_at")
+        private String createdAt; // Timestamp string (ISO 8601) or long (epoch seconds)
+        // GitHub often uses epoch seconds or ISO string. String is safer here.
+
+        @JsonProperty("updated_at")
+        private String updatedAt;
+
+        @JsonProperty("pushed_at")
+        private String pushedAt;
+
+        @JsonProperty("git_url")
+        private String gitUrl;
 
         @JsonProperty("ssh_url")
         private String sshUrl;
@@ -95,23 +120,99 @@ public class PushPayload {
         @JsonProperty("clone_url")
         private String cloneUrl;
 
-        // ... 其他仓库相关字段，例如 topics, visibility, default_branch 等
+        @JsonProperty("svn_url")
+        private String svnUrl;
 
+        @JsonProperty("homepage")
+        private String homepage; // Nullable
 
+        @JsonProperty("size")
+        private int size;
+
+        @JsonProperty("stargazers_count")
+        private int stargazersCount;
+
+        @JsonProperty("watchers_count")
+        private int watchersCount;
+
+        @JsonProperty("language")
+        private String language; // Nullable
+
+        @JsonProperty("has_issues")
+        private boolean hasIssues;
+
+        @JsonProperty("has_projects")
+        private boolean hasProjects;
+
+        @JsonProperty("has_downloads")
+        private boolean hasDownloads;
+
+        @JsonProperty("has_wiki")
+        private boolean hasWiki;
+
+        @JsonProperty("has_pages")
+        private boolean hasPages;
+
+        @JsonProperty("has_discussions")
+        private boolean hasDiscussions;
+
+        @JsonProperty("forks_count")
+        private int forksCount;
+
+        @JsonProperty("mirror_url")
+        private String mirrorUrl; // Nullable
+
+        @JsonProperty("archived")
+        private boolean archived;
+
+        @JsonProperty("disabled")
+        private boolean disabled;
+
+        @JsonProperty("open_issues_count")
+        private int openIssuesCount;
+
+        @JsonProperty("license")
+        private License license; // Nullable, nested object
+
+        @JsonProperty("allow_forking")
+        private boolean allowForking;
+
+        @JsonProperty("is_template")
+        private boolean isTemplate;
+
+        @JsonProperty("web_commit_signoff_required")
+        private boolean webCommitSignoffRequired;
+
+        @JsonProperty("topics")
+        private List<String> topics;
+
+        @JsonProperty("visibility")
+        private String visibility; // e.g., "public", "private", "internal"
+
+        @JsonProperty("default_branch")
+        private String defaultBranch;
+
+        // Aliases often present for convenience
+        @JsonProperty("forks")
+        private int forks;
+        @JsonProperty("open_issues")
+        private int openIssues;
+        @JsonProperty("watchers")
+        private int watchers;
+
+        // Deprecated, use default_branch
+        @JsonProperty("master_branch")
+        private String masterBranch;
     }
 
+    /**
+     * Represents a GitHub user or organization actor.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class User { // 用于 owner 和 sender
-
-        @JsonProperty("name") // Git committer name if available in pusher, otherwise login
-        private String name;
-
-        @JsonProperty("email") // Git committer email if available in pusher
-        private String email;
-
-        @JsonProperty("login") // GitHub username
+    public static class User { // Used for sender, repository.owner
+        @JsonProperty("login")
         private String login;
 
         @JsonProperty("id")
@@ -123,77 +224,233 @@ public class PushPayload {
         @JsonProperty("avatar_url")
         private String avatarUrl;
 
+        @JsonProperty("gravatar_id")
+        private String gravatarId; // Can be empty string
+
+        @JsonProperty("url")
+        private String url; // API URL
+
         @JsonProperty("html_url")
-        private String htmlUrl;
+        private String htmlUrl; // Profile URL
 
-        @JsonProperty("type") // "User" or "Organization"
-        private String type;
+        // Many other URLs, add as needed:
+        // followers_url, following_url, gists_url, etc.
 
+        @JsonProperty("type")
+        private String type; // e.g., "User", "Organization"
+
+        @JsonProperty("site_admin")
+        private boolean siteAdmin;
+
+        // Fields below might be specific to user type, less common for org in this simple form
+        @JsonProperty("name")
+        private String name; // Nullable, actual name if set
+
+        @JsonProperty("company")
+        private String company; // Nullable
+
+        @JsonProperty("blog")
+        private String blog; // Nullable
+
+        @JsonProperty("location")
+        private String location; // Nullable
+
+        @JsonProperty("email")
+        private String email; // Nullable, may not always be present
+
+        @JsonProperty("hireable")
+        private Boolean hireable; // Nullable
+
+        @JsonProperty("bio")
+        private String bio; // Nullable
     }
 
+    /**
+     * Represents the pusher of the commit (from git config).
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Pusher { // 推送者信息 (通常来自git配置)
+    public static class Pusher {
         @JsonProperty("name")
-        private String name; // git config user.name
+        private String name;
 
         @JsonProperty("email")
-        private String email; // git config user.email
+        private String email;
+        // Sometimes GitHub might add 'username' if it can link the email
+        @JsonProperty("username")
+        private String username; // Nullable
     }
 
+    /**
+     * Represents a commit in the push.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Commit {
-        @JsonProperty("id")
-        private String id; // SHA哈希值
+        @JsonProperty("id") // This is the SHA
+        private String id;
+
+        // 'sha' is often an alias for 'id' in GitHub payloads for commits.
+        // Keeping 'id' as primary based on common schema, but 'sha' might also appear.
+        // @JsonProperty("sha")
+        // private String sha;
 
         @JsonProperty("tree_id")
         private String treeId;
 
         @JsonProperty("distinct")
-        private boolean distinct; // 此提交是否是此推送中的新提交 (对于强制推送中的旧提交可能为false)
+        private boolean distinct;
 
         @JsonProperty("message")
-        private String message; // 提交信息
+        private String message;
 
-        @JsonProperty("timestamp") // ISO 8601 格式的时间戳
-        private String timestamp;
+        @JsonProperty("timestamp")
+        private String timestamp; // ISO 8601 format (Author date)
 
         @JsonProperty("url")
-        private String url; // 提交的URL
+        private String url; // API URL for the commit
 
         @JsonProperty("author")
-        private CommitUser author; // 提交的作者 (来自git commit)
+        private CommitActor author;
 
         @JsonProperty("committer")
-        private CommitUser committer; // 提交的提交者 (来自git commit)
+        private CommitActor committer;
 
         @JsonProperty("added")
-        private List<String> added; // 添加的文件列表
+        private List<String> added; // List of added file paths
 
         @JsonProperty("removed")
-        private List<String> removed; // 删除的文件列表
+        private List<String> removed; // List of removed file paths
 
         @JsonProperty("modified")
-        private List<String> modified; // 修改的文件列表
+        private List<String> modified; // List of modified file paths
     }
 
+    /**
+     * Represents the author or committer of a commit.
+     * Note: GitHub's push event payload for commit author/committer
+     * usually includes 'username' if the user is a GitHub user.
+     * The 'date' field for author/committer is part of the main commit's 'timestamp' (author date)
+     * and the committer date is typically the same or inferred if not explicitly different.
+     * Some other GitHub API endpoints for commits might have a separate 'date' field within author/committer.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CommitUser { // 用于Commit内的author和committer
+    public static class CommitActor {
         @JsonProperty("name")
-        private String name; // git commit 中的名称
+        private String name;
 
         @JsonProperty("email")
-        private String email; // git commit 中的邮箱
+        private String email;
 
-        @JsonProperty("username") // GitHub username, if the email is associated with an account
-        private String username;
+        @JsonProperty("username")
+        private String username; // Nullable, GitHub username if associated
 
-        @JsonProperty("date") // GitHub特有的，有时author/committer对象里会有date字段
-        private String date; // ISO 8601 格式的时间戳
+        // According to the typical push event payload, 'date' is not part of these nested objects.
+        // The commit's 'timestamp' field is the author's timestamp.
+        // The committer timestamp is usually the same or handled by GitHub.
+        // If you see 'date' here in specific payloads, you can add it:
+        // @JsonProperty("date")
+        // private String date; // ISO 8601 format
+    }
+
+    /**
+     * Represents a software license.
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class License {
+        @JsonProperty("key")
+        private String key;
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("spdx_id")
+        private String spdxId;
+
+        @JsonProperty("url")
+        private String url; // Nullable, API URL for license details
+
+        @JsonProperty("node_id")
+        private String nodeId;
+    }
+
+    /**
+     * Represents a GitHub Organization.
+     * Structure is very similar to User, often represented by the User object with type="Organization".
+     * This class is for explicit distinction if needed or if fields diverge significantly.
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Organization { // Used for top-level 'organization' field
+        @JsonProperty("login")
+        private String login;
+
+        @JsonProperty("id")
+        private long id;
+
+        @JsonProperty("node_id")
+        private String nodeId;
+
+        @JsonProperty("url")
+        private String url;
+
+        @JsonProperty("repos_url")
+        private String reposUrl;
+
+        @JsonProperty("events_url")
+        private String eventsUrl;
+
+        @JsonProperty("hooks_url")
+        private String hooksUrl;
+
+        @JsonProperty("issues_url")
+        private String issuesUrl;
+
+        @JsonProperty("members_url")
+        private String membersUrl; // Placeholder for the actual URL structure
+
+        @JsonProperty("public_members_url")
+        private String publicMembersUrl; // Placeholder for the actual URL structure
+
+        @JsonProperty("avatar_url")
+        private String avatarUrl;
+
+        @JsonProperty("description")
+        private String description; // Nullable
+    }
+
+    /**
+     * Represents a GitHub Enterprise account.
+     * Fields would be specific to enterprise information.
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Enterprise {
+        @JsonProperty("id")
+        private long id;
+
+        @JsonProperty("slug")
+        private String slug;
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("node_id")
+        private String nodeId;
+
+        @JsonProperty("avatar_url")
+        private String avatarUrl;
+
+        @JsonProperty("html_url")
+        private String htmlUrl;
+        // ... other enterprise-specific fields
     }
 }
