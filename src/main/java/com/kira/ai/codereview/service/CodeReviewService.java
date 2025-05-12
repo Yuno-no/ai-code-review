@@ -1,5 +1,7 @@
 package com.kira.ai.codereview.service;
 
+import com.kira.ai.codereview.config.github.AnalysisFilterProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.PagedIterable;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -17,13 +20,14 @@ import java.util.Map;
  **/
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CodeReviewService {
 
-    @Autowired
-    GitHubService gitHubService;
+    private final AnalysisFilterProperties filterProperties;
 
-    @Autowired
-    ChatService chatService;
+    private final GitHubService gitHubService;
+
+    private final ChatService chatService;
 
     @Async
     public void performAutomatedReview(String repositoryFullName, String commitSha) {
@@ -48,7 +52,7 @@ public class CodeReviewService {
                 fileProcessed = true; // 标记至少有一个文件被迭代到
 
                 // 过滤逻辑
-                boolean shouldAnalyze = file.getFileName().endsWith(".java") && !"removed".equals(file.getStatus());
+                boolean shouldAnalyze = shouldAnalyze(file);
 
                 if (shouldAnalyze) {
                     // 获取文件内容
@@ -105,5 +109,31 @@ public class CodeReviewService {
                 log.error("Failed to post error comment for commit {}: {}", commitSha, ex.getMessage());
             }
         }
+    }
+
+    public boolean shouldAnalyze(GHCommit.File file) {
+        // 检查文件扩展名是否在允许的列表中
+        boolean isAllowedExtension = filterProperties.getAllowedExtensions()
+                .contains(getFileExtension(file.getFileName()));
+
+        // 检查文件状态是否在排除的列表中
+        boolean isExcludedStatus = filterProperties.getExcludedStatuses()
+                .contains(file.getStatus());
+
+        // 如果扩展名允许且状态不在排除列表中，则应该进行分析
+        return isAllowedExtension && !isExcludedStatus;
+    }
+
+    // 辅助方法：从文件名中提取扩展名（转为小写）
+    private String getFileExtension(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        int dotIndex = filename.lastIndexOf('.');
+        // 确保点号不在开头且不在末尾
+        if (dotIndex > 0 && dotIndex < filename.length() - 1) {
+            return filename.substring(dotIndex + 1).toLowerCase(Locale.ENGLISH);
+        }
+        return ""; // 没有扩展名或格式不正确
     }
 }

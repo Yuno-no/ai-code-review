@@ -37,3 +37,9 @@ github:
   installation-id: 111
   private-key: xxx
   token: xxx
+analysis:
+  filter:
+    allowed-extensions:
+      - java
+    excluded-statuses:
+      - removed
