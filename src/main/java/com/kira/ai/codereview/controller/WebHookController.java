@@ -1,23 +1,15 @@
 package com.kira.ai.codereview.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kira.ai.codereview.comcmon.constants.ResultCode;
 import com.kira.ai.codereview.comcmon.model.R;
+import com.kira.ai.codereview.dto.PushPayload;
 import com.kira.ai.codereview.service.CodeReviewService;
 import com.kira.ai.codereview.service.GitHubService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.PagedIterable;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-
-import java.io.IOException;
 
 /**
  * @author: kira
@@ -29,52 +21,34 @@ import java.io.IOException;
 public class WebHookController {
 
     private final GitHubService gitHubService;
-
-    @Autowired
-    OpenAiChatModel chatModel;
-
-    @Autowired
-    CodeReviewService codeReviewService;
+    private final CodeReviewService codeReviewService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping("/webhook")
     public R<String> handleWebHook(
             @RequestHeader("X-Hub-Signature-256") String signature,
             @RequestHeader("X-GitHub-Event") String event,
-            @RequestBody String payloadRaw) {
+            @RequestBody String payloadRaw) throws JsonProcessingException {
         log.debug("Received webhook event: {}", event);
         log.trace("Payload: {}", payloadRaw);
         log.trace("Signature: {}", signature);
 
-        return R.ok();
-    }
+        if (!"push".equals(event)) {
+            return R.ok("Ignoring event: " + event);
+        }
 
-    @GetMapping("/displayCurrentUserInfo")
-    public R<String> displayCurrentUserInfo() throws IOException {
-        gitHubService.displayCurrentUserInfo();
-        return R.ok();
-    }
+        // 校验 signature
+        if (!gitHubService.isValidSignature(payloadRaw, signature)) {
+            return R.fail(ResultCode.ValidateError,"Invalid signature");
+        }
 
-    @GetMapping("/getCommit")
-    public R<String> getCommit() throws IOException {
-        GHCommit commit = gitHubService.getCommit("Yuno-no/ai-code-review", "33559e3");
-        PagedIterable<GHCommit.File> commitFiles = gitHubService.getCommitFiles(commit);
-        codeReviewService.performAutomatedReview("Yuno-no/ai-code-review", "33559e3");
-        return R.ok();
-    }
+        PushPayload pushPayload = objectMapper.readValue(payloadRaw, PushPayload.class);
+        // 从 payload 中提取 repository name, owner, commit sha
+        String repositoryFullName = pushPayload.getRepository().getFullName();
+        String commitSha = pushPayload.getHeadCommit().getId();
 
-    @GetMapping("ai/chat")
-    public R<String> chat(@RequestParam(value = "message", defaultValue = "你好") String message) {
-        ChatResponse response = chatModel.call(
-                new Prompt(
-                        new UserMessage(message)
-                ));
+        codeReviewService.performAutomatedReview(repositoryFullName, commitSha);
 
-        return R.ok(response.getResult().getOutput().getText());
-    }
-
-    @GetMapping(value = "/ai/generateStream", produces = "text/html;charset=utf-8")
-    public Flux<String> generateStream(@RequestParam(value = "message", defaultValue = "生成小众有灵感的昵称") String message) {
-        Prompt prompt = new Prompt(new UserMessage(message));
-        return this.chatModel.stream(prompt).map(r -> r.getResult().getOutput().getText());
+        return R.ok(ResultCode.Success.name());
     }
 }
