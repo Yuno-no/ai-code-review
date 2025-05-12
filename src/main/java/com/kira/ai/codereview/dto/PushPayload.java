@@ -1,17 +1,19 @@
 package com.kira.ai.codereview.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Kira
  * @date: 2025/05/12 10:13
  **/
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PushPayload {
 
     @JsonProperty("ref")
@@ -30,7 +32,19 @@ public class PushPayload {
     private Pusher pusher;
 
     @JsonProperty("sender")
-    private User sender; // User who triggered the event
+    private GitHubUser sender;
+
+    @JsonProperty("enterprise")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Enterprise enterprise;
+
+    @JsonProperty("installation")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Installation installation;
+
+    @JsonProperty("organization")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Organization organization;
 
     @JsonProperty("created")
     private boolean created;
@@ -42,32 +56,35 @@ public class PushPayload {
     private boolean forced;
 
     @JsonProperty("base_ref")
-    private String baseRef; // Nullable
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String baseRef;
 
     @JsonProperty("compare")
-    private String compare; // URL to compare changes
+    private String compare;
 
     @JsonProperty("commits")
     private List<Commit> commits;
 
     @JsonProperty("head_commit")
-    private Commit headCommit; // Nullable if no commits
-
-    // Organization and Enterprise might also be present at top level for org/enterprise events
-    @JsonProperty("organization")
-    private Organization organization; // Nullable
-
-    @JsonProperty("enterprise")
-    private Enterprise enterprise; // Nullable
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private HeadCommit headCommit;
 
 
-    /**
-     * Represents the repository where the push occurred.
-     */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Pusher {
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("email")
+        private String email;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Repository {
+
         @JsonProperty("id")
         private long id;
 
@@ -81,35 +98,140 @@ public class PushPayload {
         private String fullName;
 
         @JsonProperty("private")
-        private boolean isPrivate;
+        private boolean isPrivate; // Lombok will generate isPrivate()
 
         @JsonProperty("owner")
-        private User owner; // Can be a User or Organization type
+        private GitHubUser owner;
 
         @JsonProperty("html_url")
         private String htmlUrl;
 
         @JsonProperty("description")
-        private String description; // Nullable
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String description;
 
         @JsonProperty("fork")
         private boolean fork;
 
         @JsonProperty("url")
-        private String url; // API URL
+        private String url;
 
-        // Many other URLs, for brevity not all are listed, add as needed e.g.:
-        // forks_url, keys_url, collaborators_url, etc.
+        @JsonProperty("forks_url")
+        private String forksUrl;
+
+        @JsonProperty("keys_url")
+        private String keysUrl;
+
+        @JsonProperty("collaborators_url")
+        private String collaboratorsUrl;
+
+        @JsonProperty("teams_url")
+        private String teamsUrl;
+
+        @JsonProperty("hooks_url")
+        private String hooksUrl;
+
+        @JsonProperty("issue_events_url")
+        private String issueEventsUrl;
+
+        @JsonProperty("events_url")
+        private String eventsUrl;
+
+        @JsonProperty("assignees_url")
+        private String assigneesUrl;
+
+        @JsonProperty("branches_url")
+        private String branchesUrl;
+
+        @JsonProperty("tags_url")
+        private String tagsUrl;
+
+        @JsonProperty("blobs_url")
+        private String blobsUrl;
+
+        @JsonProperty("git_tags_url")
+        private String gitTagsUrl;
+
+        @JsonProperty("git_refs_url")
+        private String gitRefsUrl;
+
+        @JsonProperty("trees_url")
+        private String treesUrl;
+
+        @JsonProperty("statuses_url")
+        private String statusesUrl;
+
+        @JsonProperty("languages_url")
+        private String languagesUrl;
+
+        @JsonProperty("stargazers_url")
+        private String stargazersUrl;
+
+        @JsonProperty("contributors_url")
+        private String contributorsUrl;
+
+        @JsonProperty("subscribers_url")
+        private String subscribersUrl;
+
+        @JsonProperty("subscription_url")
+        private String subscriptionUrl;
+
+        @JsonProperty("commits_url")
+        private String commitsUrl;
+
+        @JsonProperty("git_commits_url")
+        private String gitCommitsUrl;
+
+        @JsonProperty("comments_url")
+        private String commentsUrl;
+
+        @JsonProperty("issue_comment_url")
+        private String issueCommentUrl;
+
+        @JsonProperty("contents_url")
+        private String contentsUrl;
+
+        @JsonProperty("compare_url")
+        private String compareUrl;
+
+        @JsonProperty("merges_url")
+        private String mergesUrl;
+
+        @JsonProperty("archive_url")
+        private String archiveUrl;
+
+        @JsonProperty("downloads_url")
+        private String downloadsUrl;
+
+        @JsonProperty("issues_url")
+        private String issuesUrl;
+
+        @JsonProperty("pulls_url")
+        private String pullsUrl;
+
+        @JsonProperty("milestones_url")
+        private String milestonesUrl;
+
+        @JsonProperty("notifications_url")
+        private String notificationsUrl;
+
+        @JsonProperty("labels_url")
+        private String labelsUrl;
+
+        @JsonProperty("releases_url")
+        private String releasesUrl;
+
+        @JsonProperty("deployments_url")
+        private String deploymentsUrl;
 
         @JsonProperty("created_at")
-        private String createdAt; // Timestamp string (ISO 8601) or long (epoch seconds)
-        // GitHub often uses epoch seconds or ISO string. String is safer here.
+        private Long createdAt; // Unix timestamp or ISO 8601. Using Long for flexibility with potential null or numeric.
 
         @JsonProperty("updated_at")
-        private String updatedAt;
+        private String updatedAt; // ISO 8601
 
         @JsonProperty("pushed_at")
-        private String pushedAt;
+        private Long pushedAt; // Unix timestamp or ISO 8601. Using Long for flexibility.
 
         @JsonProperty("git_url")
         private String gitUrl;
@@ -124,7 +246,8 @@ public class PushPayload {
         private String svnUrl;
 
         @JsonProperty("homepage")
-        private String homepage; // Nullable
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String homepage;
 
         @JsonProperty("size")
         private int size;
@@ -136,7 +259,8 @@ public class PushPayload {
         private int watchersCount;
 
         @JsonProperty("language")
-        private String language; // Nullable
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String language;
 
         @JsonProperty("has_issues")
         private boolean hasIssues;
@@ -153,14 +277,12 @@ public class PushPayload {
         @JsonProperty("has_pages")
         private boolean hasPages;
 
-        @JsonProperty("has_discussions")
-        private boolean hasDiscussions;
-
         @JsonProperty("forks_count")
         private int forksCount;
 
         @JsonProperty("mirror_url")
-        private String mirrorUrl; // Nullable
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String mirrorUrl;
 
         @JsonProperty("archived")
         private boolean archived;
@@ -172,46 +294,50 @@ public class PushPayload {
         private int openIssuesCount;
 
         @JsonProperty("license")
-        private License license; // Nullable, nested object
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private License license;
 
         @JsonProperty("allow_forking")
-        private boolean allowForking;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean allowForking;
 
         @JsonProperty("is_template")
-        private boolean isTemplate;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean isTemplate;
 
         @JsonProperty("web_commit_signoff_required")
-        private boolean webCommitSignoffRequired;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean webCommitSignoffRequired;
 
         @JsonProperty("topics")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private List<String> topics;
 
         @JsonProperty("visibility")
-        private String visibility; // e.g., "public", "private", "internal"
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String visibility;
+
+        @JsonProperty("forks")
+        private int forks;
+
+        @JsonProperty("open_issues")
+        private int openIssues;
+
+        @JsonProperty("watchers")
+        private int watchers;
 
         @JsonProperty("default_branch")
         private String defaultBranch;
 
-        // Aliases often present for convenience
-        @JsonProperty("forks")
-        private int forks;
-        @JsonProperty("open_issues")
-        private int openIssues;
-        @JsonProperty("watchers")
-        private int watchers;
-
-        // Deprecated, use default_branch
         @JsonProperty("master_branch")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private String masterBranch;
     }
 
-    /**
-     * Represents a GitHub user or organization actor.
-     */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class User { // Used for sender, repository.owner
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class GitHubUser { // Used for Repository.Owner and Sender and Installation.Account
+
         @JsonProperty("login")
         private String login;
 
@@ -225,145 +351,53 @@ public class PushPayload {
         private String avatarUrl;
 
         @JsonProperty("gravatar_id")
-        private String gravatarId; // Can be empty string
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String gravatarId;
 
         @JsonProperty("url")
-        private String url; // API URL
+        private String url;
 
         @JsonProperty("html_url")
-        private String htmlUrl; // Profile URL
+        private String htmlUrl;
 
-        // Many other URLs, add as needed:
-        // followers_url, following_url, gists_url, etc.
+        @JsonProperty("followers_url")
+        private String followersUrl;
+
+        @JsonProperty("following_url")
+        private String followingUrl;
+
+        @JsonProperty("gists_url")
+        private String gistsUrl;
+
+        @JsonProperty("starred_url")
+        private String starredUrl;
+
+        @JsonProperty("subscriptions_url")
+        private String subscriptionsUrl;
+
+        @JsonProperty("organizations_url")
+        private String organizationsUrl;
+
+        @JsonProperty("repos_url")
+        private String reposUrl;
+
+        @JsonProperty("events_url")
+        private String eventsUrl;
+
+        @JsonProperty("received_events_url")
+        private String receivedEventsUrl;
 
         @JsonProperty("type")
-        private String type; // e.g., "User", "Organization"
+        private String type; // "User" or "Organization"
 
         @JsonProperty("site_admin")
         private boolean siteAdmin;
-
-        // Fields below might be specific to user type, less common for org in this simple form
-        @JsonProperty("name")
-        private String name; // Nullable, actual name if set
-
-        @JsonProperty("company")
-        private String company; // Nullable
-
-        @JsonProperty("blog")
-        private String blog; // Nullable
-
-        @JsonProperty("location")
-        private String location; // Nullable
-
-        @JsonProperty("email")
-        private String email; // Nullable, may not always be present
-
-        @JsonProperty("hireable")
-        private Boolean hireable; // Nullable
-
-        @JsonProperty("bio")
-        private String bio; // Nullable
     }
 
-    /**
-     * Represents the pusher of the commit (from git config).
-     */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Pusher {
-        @JsonProperty("name")
-        private String name;
-
-        @JsonProperty("email")
-        private String email;
-        // Sometimes GitHub might add 'username' if it can link the email
-        @JsonProperty("username")
-        private String username; // Nullable
-    }
-
-    /**
-     * Represents a commit in the push.
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Commit {
-        @JsonProperty("id") // This is the SHA
-        private String id;
-
-        // 'sha' is often an alias for 'id' in GitHub payloads for commits.
-        // Keeping 'id' as primary based on common schema, but 'sha' might also appear.
-        // @JsonProperty("sha")
-        // private String sha;
-
-        @JsonProperty("tree_id")
-        private String treeId;
-
-        @JsonProperty("distinct")
-        private boolean distinct;
-
-        @JsonProperty("message")
-        private String message;
-
-        @JsonProperty("timestamp")
-        private String timestamp; // ISO 8601 format (Author date)
-
-        @JsonProperty("url")
-        private String url; // API URL for the commit
-
-        @JsonProperty("author")
-        private CommitActor author;
-
-        @JsonProperty("committer")
-        private CommitActor committer;
-
-        @JsonProperty("added")
-        private List<String> added; // List of added file paths
-
-        @JsonProperty("removed")
-        private List<String> removed; // List of removed file paths
-
-        @JsonProperty("modified")
-        private List<String> modified; // List of modified file paths
-    }
-
-    /**
-     * Represents the author or committer of a commit.
-     * Note: GitHub's push event payload for commit author/committer
-     * usually includes 'username' if the user is a GitHub user.
-     * The 'date' field for author/committer is part of the main commit's 'timestamp' (author date)
-     * and the committer date is typically the same or inferred if not explicitly different.
-     * Some other GitHub API endpoints for commits might have a separate 'date' field within author/committer.
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CommitActor {
-        @JsonProperty("name")
-        private String name;
-
-        @JsonProperty("email")
-        private String email;
-
-        @JsonProperty("username")
-        private String username; // Nullable, GitHub username if associated
-
-        // According to the typical push event payload, 'date' is not part of these nested objects.
-        // The commit's 'timestamp' field is the author's timestamp.
-        // The committer timestamp is usually the same or handled by GitHub.
-        // If you see 'date' here in specific payloads, you can add it:
-        // @JsonProperty("date")
-        // private String date; // ISO 8601 format
-    }
-
-    /**
-     * Represents a software license.
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class License {
+
         @JsonProperty("key")
         private String key;
 
@@ -374,21 +408,78 @@ public class PushPayload {
         private String spdxId;
 
         @JsonProperty("url")
-        private String url; // Nullable, API URL for license details
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String url;
 
         @JsonProperty("node_id")
         private String nodeId;
     }
 
-    /**
-     * Represents a GitHub Organization.
-     * Structure is very similar to User, often represented by the User object with type="Organization".
-     * This class is for explicit distinction if needed or if fields diverge significantly.
-     */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Organization { // Used for top-level 'organization' field
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Commit { // Used for items in PushPayload.commits
+
+        @JsonProperty("id") // SHA
+        private String id;
+
+        @JsonProperty("tree_id")
+        private String treeId;
+
+        @JsonProperty("distinct")
+        private boolean distinct;
+
+        @JsonProperty("message")
+        private String message;
+
+        @JsonProperty("timestamp") // ISO 8601
+        private String timestamp;
+
+        @JsonProperty("author")
+        private CommitUser author;
+
+        @JsonProperty("committer")
+        private CommitUser committer;
+
+        @JsonProperty("added")
+        private List<String> added;
+
+        @JsonProperty("removed")
+        private List<String> removed;
+
+        @JsonProperty("modified")
+        private List<String> modified;
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true) // Important for subclasses
+    @ToString(callSuper = true) // Optional, but good practice
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class HeadCommit extends Commit { // Extends Commit and adds a URL
+
+        @JsonProperty("url")
+        private String url;
+    }
+
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CommitUser { // Used for Commit.author and Commit.committer
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("email")
+        private String email;
+
+        @JsonProperty("username")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String username;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Organization {
+
         @JsonProperty("login")
         private String login;
 
@@ -414,26 +505,130 @@ public class PushPayload {
         private String issuesUrl;
 
         @JsonProperty("members_url")
-        private String membersUrl; // Placeholder for the actual URL structure
+        private String membersUrl;
 
         @JsonProperty("public_members_url")
-        private String publicMembersUrl; // Placeholder for the actual URL structure
+        private String publicMembersUrl;
 
         @JsonProperty("avatar_url")
         private String avatarUrl;
 
         @JsonProperty("description")
-        private String description; // Nullable
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String description;
+
+        @JsonProperty("name")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String name;
+
+        @JsonProperty("company")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String company;
+
+        @JsonProperty("blog")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String blog;
+
+        @JsonProperty("location")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String location;
+
+        @JsonProperty("email")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String email;
+
+        @JsonProperty("twitter_username")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String twitterUsername;
+
+        @JsonProperty("is_verified")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean isVerified;
+
+        @JsonProperty("has_organization_projects")
+        private boolean hasOrganizationProjects;
+
+        @JsonProperty("has_repository_projects")
+        private boolean hasRepositoryProjects;
+
+        @JsonProperty("public_repos")
+        private int publicRepos;
+
+        @JsonProperty("public_gists")
+        private int publicGists;
+
+        @JsonProperty("followers")
+        private int followers;
+
+        @JsonProperty("following")
+        private int following;
+
+        @JsonProperty("html_url")
+        private String htmlUrl;
+
+        @JsonProperty("created_at") // ISO 8601
+        private String createdAt;
+
+        @JsonProperty("updated_at") // ISO 8601
+        private String updatedAt;
+
+        @JsonProperty("type")
+        private String type; // "Organization"
+
+        @JsonProperty("total_private_repos")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer totalPrivateRepos;
+
+        @JsonProperty("owned_private_repos")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer ownedPrivateRepos;
+
+        @JsonProperty("private_gists")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer privateGists;
+
+        @JsonProperty("disk_usage")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer diskUsage;
+
+        @JsonProperty("collaborators")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer collaborators;
+
+        @JsonProperty("billing_email")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String billingEmail;
+
+        @JsonProperty("plan")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Plan plan;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Plan {
+            @JsonProperty("name")
+            private String name;
+
+            @JsonProperty("space")
+            private int space;
+
+            @JsonProperty("private_repos")
+            private int privateRepos;
+
+            @JsonProperty("filled_seats")
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            private Integer filledSeats;
+
+            @JsonProperty("seats")
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            private Integer seats;
+        }
     }
 
-    /**
-     * Represents a GitHub Enterprise account.
-     * Fields would be specific to enterprise information.
-     */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Enterprise {
+
         @JsonProperty("id")
         private long id;
 
@@ -449,8 +644,89 @@ public class PushPayload {
         @JsonProperty("avatar_url")
         private String avatarUrl;
 
+        @JsonProperty("description")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String description;
+
+        @JsonProperty("website_url")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String websiteUrl;
+
         @JsonProperty("html_url")
         private String htmlUrl;
-        // ... other enterprise-specific fields
+
+        @JsonProperty("created_at") // ISO 8601
+        private String createdAt;
+
+        @JsonProperty("updated_at") // ISO 8601
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String updatedAt;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Installation {
+
+        @JsonProperty("id")
+        private long id;
+
+        @JsonProperty("account")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private GitHubUser account; // Can be User or Organization
+
+        @JsonProperty("app_id")
+        private long appId;
+
+        @JsonProperty("app_slug")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String appSlug;
+
+        @JsonProperty("target_id")
+        private long targetId;
+
+        @JsonProperty("target_type")
+        private String targetType; // "User" or "Organization"
+
+        @JsonProperty("permissions")
+        private Map<String, String> permissions;
+
+        @JsonProperty("events")
+        private List<String> events;
+
+        @JsonProperty("created_at") // ISO 8601
+        private String createdAt;
+
+        @JsonProperty("updated_at") // ISO 8601
+        private String updatedAt;
+
+        @JsonProperty("single_file_name")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String singleFileName;
+
+        @JsonProperty("has_multiple_single_files")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Boolean hasMultipleSingleFiles;
+
+        @JsonProperty("single_file_paths")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private List<String> singleFilePaths;
+
+        @JsonProperty("repository_selection")
+        private String repositorySelection; // "all" or "selected"
+
+        @JsonProperty("repositories_url")
+        private String repositoriesUrl;
+
+        @JsonProperty("html_url")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String htmlUrl;
+
+        @JsonProperty("suspended_by")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private GitHubUser suspendedBy;
+
+        @JsonProperty("suspended_at")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String suspendedAt; // ISO 8601
     }
 }
