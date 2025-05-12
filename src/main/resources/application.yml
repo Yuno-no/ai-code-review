@@ -10,6 +10,27 @@ spring:
       chat:
         options:
           model: xxx
+  jackson:
+    # 日期和时区
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai # 使用你当前位置的时区或 UTC
+
+    # 序列化
+    serialization:
+      write-dates-as-timestamps: false # 使用上面定义的 date-format
+      indent-output: true              # 开发时可以开启，生产环境建议 false
+      fail-on-empty-beans: false       # 允许序列化没有属性的 bean
+    default-property-inclusion: non_null # 只序列化非 null 的属性
+
+    # 反序列化
+    deserialization:
+      fail-on-unknown-properties: true # 忽略 JSON 中未在 Java 对象中定义的属性
+      # accept-empty-string-as-null-object: true # 可选：将 "" 视作 null
+      # Mapper
+      # mapper:
+      # accept-case-insensitive-properties: true # 可选：属性名大小写不敏感
+    # 命名策略
+    # property-naming-strategy: snake_case # 如果你的 JSON API 使用蛇形命名
 github:
   webhook-secret: xxx
   app-id: xxx

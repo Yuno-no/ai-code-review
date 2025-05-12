@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.PagedIterable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class CodeReviewService {
     @Autowired
     ChatService chatService;
 
+    @Async
     public void performAutomatedReview(String repositoryFullName, String commitSha) {
         log.info("Starting automated review for commit {} in repository {}", commitSha, repositoryFullName);
         try {
@@ -34,7 +36,7 @@ public class CodeReviewService {
                 return;
             }
 
-            // 2. 获取变更文件列表 (现在是 PagedIterable)
+            // 2. 获取变更文件列表
             PagedIterable<GHCommit.File> changedFilesIterable = gitHubService.getCommitFiles(commit);
 
             // 3. 过滤文件并获取内容
@@ -45,11 +47,11 @@ public class CodeReviewService {
             for (GHCommit.File file : changedFilesIterable) {
                 fileProcessed = true; // 标记至少有一个文件被迭代到
 
-                // 过滤逻辑 (保持不变)
-                boolean shouldAnalyze = file.getFileName().endsWith(".md") && !"removed".equals(file.getStatus());
+                // 过滤逻辑
+                boolean shouldAnalyze = file.getFileName().endsWith(".java") && !"removed".equals(file.getStatus());
 
                 if (shouldAnalyze) {
-                    // 获取文件内容 (逻辑保持不变)
+                    // 获取文件内容
                     String content = gitHubService.getFileContent(repositoryFullName, commitSha, file.getFileName());
                     if (content != null && !content.isEmpty()) {
                         filesToAnalyzeContent.put(file.getFileName(), content);
@@ -64,22 +66,20 @@ public class CodeReviewService {
             // 检查是否有文件被处理或过滤后符合条件
             if (!fileProcessed) {
                 log.info("Review finished: No changed files found in commit {}", commitSha);
-                // gitHubService.postCommitComment(repositoryFullName, commitSha, "AI Analysis: No file changes detected in this commit.");
                 return;
             }
             if (filesToAnalyzeContent.isEmpty()) {
                 log.info("Review finished: No suitable files found for analysis in commit {}", commitSha);
-                // gitHubService.postCommitComment(repositoryFullName, commitSha, "AI Analysis: No files suitable for analysis were found in this commit.");
                 return;
             }
 
-            // 4. 调用 AI 分析 (保持不变)
+            // 4. 调用 AI 分析
             String analysisResult = chatService.analyzeCodeChanges(filesToAnalyzeContent, commitSha);
 
-            // 5. 格式化最终评论 (可选, 保持不变)
+            // 5. 格式化最终评论
             String finalComment = "AI Code Review for commit `" + commitSha.substring(0, 7) + "`:\n\n" + analysisResult;
 
-            // 6. 发表评论 (保持不变)
+            // 6. 发表评论
             gitHubService.postCommitComment(repositoryFullName, commitSha, finalComment);
 
             log.info("Automated review completed successfully for commit {} in repository {}", commitSha, repositoryFullName);

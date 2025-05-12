@@ -2,15 +2,22 @@ package com.kira.ai.codereview.service;
 
 import com.kira.ai.codereview.comcmon.constants.ResultCode;
 import com.kira.ai.codereview.comcmon.exception.BusinessException;
+import com.kira.ai.codereview.config.github.GitHubProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +31,9 @@ public class GitHubService {
 
     private static final long MAX_FILE_SIZE_BYTES = 1_000_000; // 1MB limit
 
-    private GitHub gitHubClient;
+    private final GitHub gitHubClient;
+
+    private final GitHubProperties gitHubProperties;
 
     public void displayCurrentUserInfo() throws IOException {
         if (gitHubClient.isCredentialValid()) { // 检查凭证有效性 [1]
@@ -154,5 +163,25 @@ public class GitHubService {
      */
     public GHRateLimit getRateLimit() throws IOException {
         return gitHubClient.getRateLimit();
+    }
+
+    public boolean isValidSignature(String payload, String signature) {
+        if (signature == null || !signature.startsWith("sha256=")) {
+            return false;
+        }
+        String expectedSignature;
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(gitHubProperties.getWebhookSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            expectedSignature = "sha256=" + HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            // Log error
+            System.err.println("Error validating webhook signature: " + e.getMessage());
+            return false;
+        }
+        // 使用固定时间比较防止时序攻击 (虽然对于 Webhook 可能过虑，但是好习惯)
+        return MessageDigest.isEqual(expectedSignature.getBytes(StandardCharsets.UTF_8), signature.getBytes(StandardCharsets.UTF_8));
     }
 }
