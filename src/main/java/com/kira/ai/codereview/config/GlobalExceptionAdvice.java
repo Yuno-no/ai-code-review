@@ -1,9 +1,9 @@
 package com.kira.ai.codereview.config;
 
-import com.kira.ai.codereview.comcmon.constants.ResultCode;
-import com.kira.ai.codereview.comcmon.exception.BusinessException;
-import com.kira.ai.codereview.comcmon.exception.SystemException;
-import com.kira.ai.codereview.comcmon.model.R;
+import com.kira.ai.codereview.common.constants.ResultCode;
+import com.kira.ai.codereview.common.exception.BusinessException;
+import com.kira.ai.codereview.common.exception.SystemException;
+import com.kira.ai.codereview.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

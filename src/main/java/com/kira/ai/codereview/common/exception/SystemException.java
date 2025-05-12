@@ -1,4 +1,4 @@
-package com.kira.ai.codereview.comcmon.exception;
+package com.kira.ai.codereview.common.exception;
 
 /**
  * @ClassName SystemException

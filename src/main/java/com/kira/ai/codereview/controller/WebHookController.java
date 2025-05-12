@@ -2,8 +2,8 @@ package com.kira.ai.codereview.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kira.ai.codereview.comcmon.constants.ResultCode;
-import com.kira.ai.codereview.comcmon.model.R;
+import com.kira.ai.codereview.common.constants.ResultCode;
+import com.kira.ai.codereview.common.model.R;
 import com.kira.ai.codereview.dto.PushPayload;
 import com.kira.ai.codereview.service.CodeReviewService;
 import com.kira.ai.codereview.service.GitHubService;

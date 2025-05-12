@@ -1,7 +1,7 @@
-package com.kira.ai.codereview.comcmon.exception;
+package com.kira.ai.codereview.common.exception;
 
-import com.kira.ai.codereview.comcmon.constants.BaseEnum;
-import com.kira.ai.codereview.comcmon.constants.ResultCode;
+import com.kira.ai.codereview.common.constants.BaseEnum;
+import com.kira.ai.codereview.common.constants.ResultCode;
 import lombok.Data;
 
 /**

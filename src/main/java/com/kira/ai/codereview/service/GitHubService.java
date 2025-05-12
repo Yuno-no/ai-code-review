@@ -1,7 +1,7 @@
 package com.kira.ai.codereview.service;
 
-import com.kira.ai.codereview.comcmon.constants.ResultCode;
-import com.kira.ai.codereview.comcmon.exception.BusinessException;
+import com.kira.ai.codereview.common.constants.ResultCode;
+import com.kira.ai.codereview.common.exception.BusinessException;
 import com.kira.ai.codereview.config.github.GitHubProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

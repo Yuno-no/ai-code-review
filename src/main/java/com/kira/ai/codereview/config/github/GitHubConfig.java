@@ -1,6 +1,6 @@
 package com.kira.ai.codereview.config.github;
 
-import com.kira.ai.codereview.comcmon.exception.BusinessException;
+import com.kira.ai.codereview.common.exception.BusinessException;
 import jakarta.annotation.Resource;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;

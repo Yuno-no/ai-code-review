@@ -1,4 +1,4 @@
-package com.kira.ai.codereview.comcmon.constants;
+package com.kira.ai.codereview.common.constants;
 
 /**
  * 基础枚举类

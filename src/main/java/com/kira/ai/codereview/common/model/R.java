@@ -1,7 +1,7 @@
-package com.kira.ai.codereview.comcmon.model;
+package com.kira.ai.codereview.common.model;
 
-import com.kira.ai.codereview.comcmon.constants.BaseEnum;
-import com.kira.ai.codereview.comcmon.constants.ResultCode;
+import com.kira.ai.codereview.common.constants.BaseEnum;
+import com.kira.ai.codereview.common.constants.ResultCode;
 import lombok.Data;
 
 import java.io.Serial;
